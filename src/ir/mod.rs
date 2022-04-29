@@ -1,3 +1,4 @@
+use crate::lexer::{Token, TokenType};
 use inkwell::basic_block::BasicBlock;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
@@ -9,7 +10,6 @@ use inkwell::targets::{
 use inkwell::values::{FunctionValue, PointerValue};
 use inkwell::{AddressSpace, IntPredicate, OptimizationLevel};
 use std::collections::VecDeque;
-use crate::lexer::{Token, TokenType};
 
 pub struct Compiler<'ctx> {
     pub context: &'ctx Context,
