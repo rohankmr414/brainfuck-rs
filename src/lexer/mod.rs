@@ -160,13 +160,13 @@ impl Lexer for Tokenizer {
             let tok = self.next();
             match tok {
                 Ok(tok) => self.cur_tok = tok,
-                Err(e) => return Err(e)
+                Err(e) => return Err(e),
             };
             self.send();
         }
         self.tokens.push(Token {
             token_type: TokenType::EOF,
-            line: self.line+1,
+            line: self.line + 1,
             pos: 1,
         });
         Ok(())
