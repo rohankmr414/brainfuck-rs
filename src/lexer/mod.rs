@@ -2,7 +2,8 @@ use std::fmt;
 use std::fs::File;
 use std::io::Read;
 
-enum Error {
+#[derive(Debug, Clone, PartialEq)]
+pub enum Error {
     InvalidCharacter(char, i32, i32),
 }
 
@@ -19,8 +20,8 @@ impl fmt::Display for Error {
 }
 
 // TokenType for brainfuck lexer
-#[derive(Copy, Clone, PartialEq)]
-enum TokenType {
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum TokenType {
     // Initialize a one-dimensional array of 30,000 elements with all the values set to 0.
     PStart,
     // End of file
@@ -45,22 +46,24 @@ enum TokenType {
     LoopEnd,
 }
 
-struct Token {
-    token_type: TokenType,
+#[derive(Debug, PartialEq)]
+pub struct Token {
+    pub(crate) token_type: TokenType,
     line: i32,
     pos: i32,
 }
 
+#[derive(Debug)]
 pub struct Tokenizer {
     input: String,
     ptr: usize,
     pos: i32,
     line: i32,
     cur_tok: TokenType,
-    tokens: Vec<Token>,
+    pub(crate) tokens: Vec<Token>,
 }
 
-trait Lexer {
+pub(crate) trait Lexer {
     fn new(input: &File) -> Self;
     fn pos(&self) -> i32;
     fn line(&self) -> i32;
@@ -76,7 +79,7 @@ impl Lexer for Tokenizer {
         Tokenizer {
             input: strinput,
             ptr: 0,
-            pos: 1,
+            pos: 0,
             line: 1,
             cur_tok: TokenType::PStart,
             tokens: Vec::new(),
@@ -129,8 +132,6 @@ impl Lexer for Tokenizer {
             }
             '\n' => {
                 tok = TokenType::NewLine;
-                self.line += 1;
-                self.pos = 1;
             }
             _ => {
                 return Err(Error::InvalidCharacter(c, self.pos, self.line));
@@ -143,14 +144,15 @@ impl Lexer for Tokenizer {
     fn send(&mut self) {
         if self.cur_tok == TokenType::NewLine {
             self.line += 1;
-            self.pos = 1;
+            self.pos = 0;
+        } else {
+            let tok = Token {
+                token_type: self.cur_tok,
+                line: self.line,
+                pos: self.pos,
+            };
+            self.tokens.push(tok)
         }
-        let tok = Token {
-            token_type: self.cur_tok,
-            line: self.line,
-            pos: self.pos,
-        };
-        self.tokens.push(tok)
     }
 
     fn lex(&mut self) -> Result<(), Error> {
@@ -162,6 +164,11 @@ impl Lexer for Tokenizer {
             };
             self.send();
         }
+        self.tokens.push(Token {
+            token_type: TokenType::EOF,
+            line: self.line+1,
+            pos: 1,
+        });
         Ok(())
     }
 }
