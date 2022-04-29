@@ -2,6 +2,7 @@ use std::fs::File;
 use crate::lexer::{Lexer, Tokenizer};
 
 mod lexer;
+mod ir;
 
 fn main() {
     let f = File::open("./hello_world.bf").unwrap();
